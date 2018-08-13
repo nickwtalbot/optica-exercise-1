@@ -1,6 +1,7 @@
 import com.nicktalbot.optica.Server
 import groovyx.net.http.ContentType
 import groovyx.net.http.RESTClient
+import spark.Spark
 import spock.lang.Specification
 
 class ServerTest extends Specification {
@@ -44,5 +45,14 @@ class ServerTest extends Specification {
         then:
         result.status == 200
         result.data.size == 2
+
+        result.data.get(0) == [id: 1, firstname: "John", surname: "Smith"]
+        result.data.get(1) == [id: 2, firstname: "Dave", surname: "Jones"]
     }
+
+    def cleanup() {
+        Spark.stop()
+        Thread.sleep(1000)
+    }
+
 }
