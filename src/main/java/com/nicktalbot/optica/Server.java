@@ -1,11 +1,13 @@
 package com.nicktalbot.optica;
 
-import com.google.common.collect.ImmutableList;
 import com.nicktalbot.optica.data.Customer;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 
-import static com.nicktalbot.optica.helpers.JsonRoute.getJson;
-import static spark.Spark.port;
+import java.util.ArrayList;
+
+import static com.nicktalbot.optica.helpers.JsonRoute.*;
+import static spark.Spark.*;
 
 @Slf4j
 public class Server {
@@ -19,11 +21,25 @@ public class Server {
 
     public static void run() {
 
+        val repository = new ArrayList<Customer>();  //@TODO: This is NOT thread-safe as a real Repository should be
+
         port(8080);
 
-        getJson("/customers", (req, res) -> ImmutableList.of(
-                new Customer(1, "John", "Smith"),
-                new Customer(2, "Dave", "Jones")
-        ));
+        getJson("/customers", () -> repository);
+
+        postJson("/customers", Customer.class, customer ->
+
+           repository.add(customer.toBuilder().id(repository.size() + 1).build())
+        );
+
+        delete("/customer/:id", (request, response) -> {
+
+            val id = Integer.valueOf(request.params("id"));
+            val match = repository.stream().filter(customer -> customer.getId() == id).findAny();
+            val deleted = match.map(repository::remove).orElse(false);
+
+            response.status(deleted ? 200 : 404);
+            return "";
+        });
     }
 }
