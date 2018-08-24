@@ -27,10 +27,13 @@ public class Server {
 
         getJson("/customers", () -> repository);
 
-        postJson("/customers", Customer.class, customer ->
+        postJson("/customers", Customer.class, customer -> {
 
-           repository.add(customer.toBuilder().id(repository.size() + 1).build())
-        );
+            val newId = repository.size() + 1;
+
+            repository.add(customer.toBuilder().id(newId).build());
+            return newId;
+        });
 
         delete("/customer/:id", (request, response) -> {
 

@@ -26,6 +26,7 @@ class ServerTest extends Specification {
 
         then:
         added.status == 201
+        added.responseData == "1"
     }
 
     def "add and retrieve a customer"() {

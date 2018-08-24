@@ -5,7 +5,7 @@ import lombok.val;
 import spark.Request;
 import spark.Response;
 
-import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static spark.Spark.*;
@@ -24,16 +24,14 @@ public interface JsonRoute {
         }, mapper::writeValueAsString);
     }
 
-    static <T> void postJson(String path, Class<T> type, Consumer<T> action) {
+    static <T, R> void postJson(String path, Class<T> type, Function<T, R> action) {
 
         val mapper = new ObjectMapper();
 
         post(path, (request, response) -> {
 
-            action.accept(mapper.readValue(request.body(), type));
-
             response.status(201);
-            return "";
+            return action.apply(mapper.readValue(request.body(), type));
         });
     }
 }
